@@ -41,6 +41,8 @@ export interface Order {
   /** 登録日（D0からの経過日数） */
   orderedDay: number;
   status: OrderStatus;
+  /** 受注ステータスが最初に「引当中」に遷移した日（BOMのどの階層であれ最初のWIPが開始した日） */
+  firstAllocatedDay?: number;
   shippedDay?: number;
   cancelledDay?: number;
 }

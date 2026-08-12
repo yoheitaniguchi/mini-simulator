@@ -189,6 +189,7 @@ export function attemptAllocate(
 
   if (order.status === "受注済") {
     order.status = "引当中";
+    order.firstAllocatedDay = day;
   }
 
   pushLog(state, "production-allocate", `${itemName(state, itemId)} の仕掛開始（受注 ${order.orderId}）`);
@@ -307,4 +308,106 @@ export function cancelOrder(state: SimulationState, orderId: string): void {
   if (order.status !== "受注済") return;
   order.status = "取消済";
   order.cancelledDay = state.day;
+}
+
+/** §14 マスタ編集：品目の標準リードタイム（編集可。区分・BOM構造は編集不可） */
+export function updateItemLeadTime(
+  state: SimulationState,
+  itemId: string,
+  leadTimeDays: number,
+): void {
+  if (!Number.isFinite(leadTimeDays) || leadTimeDays <= 0) return;
+  const item = state.items.find((i) => i.itemId === itemId);
+  if (!item) return;
+  item.leadTimeDays = leadTimeDays;
+}
+
+/** §14 マスタ編集：BOMの員数（編集可。構成品目の追加・削除は編集不可） */
+export function updateBomQuantity(
+  state: SimulationState,
+  parentItemId: string,
+  childItemId: string,
+  quantityPer: number,
+): void {
+  if (!Number.isFinite(quantityPer) || quantityPer <= 0) return;
+  const line = state.bom.find(
+    (l) => l.parentItemId === parentItemId && l.childItemId === childItemId,
+  );
+  if (!line) return;
+  line.quantityPer = quantityPer;
+}
+
+/** §14 マスタ編集：得意先名称（編集可。新規追加は編集不可） */
+export function updateCustomerName(state: SimulationState, customerId: string, name: string): void {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const customer = state.customers.find((c) => c.customerId === customerId);
+  if (!customer) return;
+  customer.name = trimmed;
+}
+
+/** §14 マスタ編集：仕入先名称（編集可。新規追加は編集不可） */
+export function updateSupplierName(state: SimulationState, supplierId: string, name: string): void {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const supplier = state.suppliers.find((s) => s.supplierId === supplierId);
+  if (!supplier) return;
+  supplier.name = trimmed;
+}
+
+interface BottleneckCandidate {
+  label: string;
+  /** 比較用の基準日。大きいほど後（＝クリティカルパス上でより律速）とみなす */
+  etaDay: number;
+}
+
+function findBottleneck(
+  state: SimulationState,
+  order: Order,
+  itemId: string,
+  multiplier: number,
+): BottleneckCandidate[] {
+  if (hasFg(state, order.orderId, itemId)) return [];
+  if (hasWip(state, order.orderId, itemId)) {
+    const record = state.wipRecords.find(
+      (r) => r.orderId === order.orderId && r.itemId === itemId,
+    )!;
+    return [{ label: `${itemName(state, itemId)} 仕掛中`, etaDay: record.completeDay }];
+  }
+
+  const candidates: BottleneckCandidate[] = [];
+  for (const line of bomChildrenOf(state, itemId)) {
+    const childItem = getItem(state, line.childItemId);
+    const childQty = multiplier * line.quantityPer;
+    if (childItem.category === "buy") {
+      if (materialStockQty(state, line.childItemId) < childQty) {
+        const outstanding = state.purchaseOrders
+          .filter((po) => po.itemId === line.childItemId && !po.arrived)
+          .sort((a, b) => b.arrivalDay - a.arrivalDay)[0];
+        const etaDay = outstanding?.arrivalDay ?? Number.POSITIVE_INFINITY;
+        const etaLabel = outstanding ? `（D${outstanding.arrivalDay}着予定）` : "";
+        candidates.push({ label: `${itemName(state, line.childItemId)}入荷待ち${etaLabel}`, etaDay });
+      }
+    } else {
+      candidates.push(...findBottleneck(state, order, line.childItemId, childQty));
+    }
+  }
+  return candidates;
+}
+
+/**
+ * §18 ガントチャートの「今日位置のラベル」用：受注の現在の状況を1行で表す文言を返す。
+ * BOMツリー全体を走査し、最も入荷・完成が遅い（＝クリティカルパス上の律速工程となる）
+ * 候補を採用する（design.md §9-1のモーターの例のような、律速工程が体感できる表示にするため）。
+ */
+export function describeOrderActivity(state: SimulationState, order: Order): string {
+  if (order.status === "出荷済") return "出荷済";
+  if (order.status === "取消済") return `取消済（D${order.cancelledDay}）`;
+
+  const candidates = findBottleneck(state, order, order.productItemId, order.quantity);
+  if (candidates.length === 0) {
+    return "引当待ち";
+  }
+  candidates.sort((a, b) => b.etaDay - a.etaDay);
+  return candidates[0].label;
 }

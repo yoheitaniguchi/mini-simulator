@@ -1,13 +1,28 @@
 // useReducer用reducer（docs/design.md §12）
 import { initialBom, initialCustomers, initialItems, initialSuppliers } from "../data/masterData";
 import type { CreateOrderInput, SimulationState } from "../types";
-import { advanceDay, cancelOrder, createOrder } from "./logic";
+import {
+  advanceDay,
+  cancelOrder,
+  createOrder,
+  updateBomQuantity,
+  updateCustomerName,
+  updateItemLeadTime,
+  updateSupplierName,
+} from "./logic";
 
 export type SimulationAction =
   | { type: "ORDER_CREATE"; payload: CreateOrderInput }
   | { type: "ORDER_CANCEL"; payload: { orderId: string } }
   | { type: "ADVANCE_DAY" }
-  | { type: "RESET" };
+  | { type: "RESET" }
+  | { type: "MASTER_UPDATE_ITEM_LEAD_TIME"; payload: { itemId: string; leadTimeDays: number } }
+  | {
+      type: "MASTER_UPDATE_BOM_QUANTITY";
+      payload: { parentItemId: string; childItemId: string; quantityPer: number };
+    }
+  | { type: "MASTER_UPDATE_CUSTOMER_NAME"; payload: { customerId: string; name: string } }
+  | { type: "MASTER_UPDATE_SUPPLIER_NAME"; payload: { supplierId: string; name: string } };
 
 export function createInitialState(): SimulationState {
   return {
@@ -51,6 +66,31 @@ export function simulationReducer(
     }
     case "RESET": {
       return createInitialState();
+    }
+    case "MASTER_UPDATE_ITEM_LEAD_TIME": {
+      const next = structuredClone(state);
+      updateItemLeadTime(next, action.payload.itemId, action.payload.leadTimeDays);
+      return next;
+    }
+    case "MASTER_UPDATE_BOM_QUANTITY": {
+      const next = structuredClone(state);
+      updateBomQuantity(
+        next,
+        action.payload.parentItemId,
+        action.payload.childItemId,
+        action.payload.quantityPer,
+      );
+      return next;
+    }
+    case "MASTER_UPDATE_CUSTOMER_NAME": {
+      const next = structuredClone(state);
+      updateCustomerName(next, action.payload.customerId, action.payload.name);
+      return next;
+    }
+    case "MASTER_UPDATE_SUPPLIER_NAME": {
+      const next = structuredClone(state);
+      updateSupplierName(next, action.payload.supplierId, action.payload.name);
+      return next;
     }
     default:
       return state;
