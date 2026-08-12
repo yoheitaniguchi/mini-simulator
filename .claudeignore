@@ -1,0 +1,6 @@
+# 自動コンテキスト読み込みから除外するもの（アクセス自体を禁止するものではない）
+node_modules/
+dist/
+dist-ssr/
+*.local
+.git/
