@@ -23,12 +23,12 @@ npm test
 ## GitHub Pagesへの公開
 
 バックエンドを持たない静的SPAなので、そのままGitHub Pagesで公開できる。
+リポジトリの Settings → Pages → Source は **GitHub Actions** に設定済み。
 
-1. リポジトリの Settings → Pages → Source を **GitHub Actions** に設定する（初回のみ、手動操作が必要）
-2. `master` ブランチにpushすると `.github/workflows/deploy.yml` が `npm run build` の成果物（`dist/`）を
-   自動でPagesにデプロイする（`workflow_dispatch` で手動実行も可能）
-3. 公開URLは `https://<ユーザー名またはOrg名>.github.io/mini-simulator/` になる
-   （プロジェクトサイトなのでリポジトリ名がパスに入る）
+`master` ブランチにpushすると `.github/workflows/deploy.yml` が `npm run build` の成果物（`dist/`）を
+自動でPagesにデプロイする（`workflow_dispatch` で手動実行も可能）。公開URLは
+`https://<ユーザー名またはOrg名>.github.io/mini-simulator/`
+（プロジェクトサイトなのでリポジトリ名がパスに入る）。
 
 `vite.config.ts` の `base: "/mini-simulator/"` はこの公開パスに合わせて設定してある。
 リポジトリ名を変更した場合はここも合わせて変更すること。ルーティングライブラリは使っておらず
