@@ -20,6 +20,20 @@ npm test
 再現しており、ドメインロジックの検証に使っている。GitHub ActionsでPR発行時に自動実行される
 （`.github/workflows/test.yml`）。
 
+## GitHub Pagesへの公開
+
+バックエンドを持たない静的SPAなので、そのままGitHub Pagesで公開できる。
+
+1. リポジトリの Settings → Pages → Source を **GitHub Actions** に設定する（初回のみ、手動操作が必要）
+2. `master` ブランチにpushすると `.github/workflows/deploy.yml` が `npm run build` の成果物（`dist/`）を
+   自動でPagesにデプロイする（`workflow_dispatch` で手動実行も可能）
+3. 公開URLは `https://<ユーザー名またはOrg名>.github.io/mini-simulator/` になる
+   （プロジェクトサイトなのでリポジトリ名がパスに入る）
+
+`vite.config.ts` の `base: "/mini-simulator/"` はこの公開パスに合わせて設定してある。
+リポジトリ名を変更した場合はここも合わせて変更すること。ルーティングライブラリは使っておらず
+（タブ切り替えはコンポーネントstateのみ）、SPA用の404リダイレクト対策は不要。
+
 ## ドキュメント
 
 - **[docs/design.md](./docs/design.md)** — フル仕様書。業務ルール・画面設計・演習シナリオなど、
