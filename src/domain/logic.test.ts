@@ -4,7 +4,16 @@ import { describe, expect, it } from "vitest";
 import { ITEM_IDS } from "../data/masterData";
 import type { SimulationState } from "../types";
 import { createInitialState } from "./reducer";
-import { advanceDay, cancelOrder, createOrder } from "./logic";
+import {
+  advanceDay,
+  cancelOrder,
+  createOrder,
+  describeOrderActivity,
+  updateBomQuantity,
+  updateCustomerName,
+  updateItemLeadTime,
+  updateSupplierName,
+} from "./logic";
 
 function advanceUntil(state: SimulationState, targetDay: number): void {
   while (state.day <= targetDay) {
@@ -228,5 +237,97 @@ describe("§5 二重発注防止", () => {
     const totalOrdered = motorPos.reduce((sum, po) => sum + po.quantity, 0);
     // Y(2台→モーター2個)+Z(1台→モーター1個)の合計3個を超えて発注していないこと
     expect(totalOrdered).toBe(3);
+  });
+});
+
+describe("§14 マスタ編集", () => {
+  it("品目の標準リードタイムは編集でき、以降の発注に反映される", () => {
+    const state = createInitialState();
+    updateItemLeadTime(state, ITEM_IDS.MOTOR, 3);
+    expect(state.items.find((i) => i.itemId === ITEM_IDS.MOTOR)?.leadTimeDays).toBe(3);
+
+    createOrder(state, {
+      customerId: "CUST-A",
+      productItemId: ITEM_IDS.CONVEYOR,
+      quantity: 1,
+      amount: 1_000_000,
+      dueDay: 20,
+    });
+    advanceDay(state);
+    const motorPo = state.purchaseOrders.find((po) => po.itemId === ITEM_IDS.MOTOR);
+    expect(motorPo?.arrivalDay).toBe(3); // D0 + 新リードタイム3日
+  });
+
+  it("0以下や不正な値は無視される（既存の値を保持する）", () => {
+    const state = createInitialState();
+    updateItemLeadTime(state, ITEM_IDS.MOTOR, 0);
+    updateItemLeadTime(state, ITEM_IDS.MOTOR, -5);
+    updateItemLeadTime(state, ITEM_IDS.MOTOR, Number.NaN);
+    expect(state.items.find((i) => i.itemId === ITEM_IDS.MOTOR)?.leadTimeDays).toBe(10);
+  });
+
+  it("BOMの員数は編集できる", () => {
+    const state = createInitialState();
+    updateBomQuantity(state, ITEM_IDS.DRIVE, ITEM_IDS.MOTOR, 2);
+    const line = state.bom.find(
+      (l) => l.parentItemId === ITEM_IDS.DRIVE && l.childItemId === ITEM_IDS.MOTOR,
+    );
+    expect(line?.quantityPer).toBe(2);
+  });
+
+  it("得意先・仕入先の名称は編集できる", () => {
+    const state = createInitialState();
+    updateCustomerName(state, "CUST-A", "新しい得意先名");
+    updateSupplierName(state, "SUP-MOTOR", "新しい仕入先名");
+    expect(state.customers.find((c) => c.customerId === "CUST-A")?.name).toBe("新しい得意先名");
+    expect(state.suppliers.find((s) => s.supplierId === "SUP-MOTOR")?.name).toBe("新しい仕入先名");
+  });
+
+  it("空文字の名称は無視される", () => {
+    const state = createInitialState();
+    updateCustomerName(state, "CUST-A", "   ");
+    expect(state.customers.find((c) => c.customerId === "CUST-A")?.name).toBe("得意先A");
+  });
+});
+
+describe("§18 ガントチャート用ステータスラベル（describeOrderActivity）", () => {
+  it("§9-1のシナリオで、各時点の律速工程（クリティカルパス）が正しくラベル化される", () => {
+    const state = createInitialState();
+    const order = createOrder(state, {
+      customerId: "CUST-A",
+      productItemId: ITEM_IDS.CONVEYOR,
+      quantity: 1,
+      amount: 1_000_000,
+      dueDay: 20,
+    });
+
+    // D0直後：全構成品未発注〜発注直後。モーターが最も入荷が遅い（D10着）ため律速工程として表示される
+    advanceDay(state);
+    let current = state.orders.find((o) => o.orderId === order.orderId)!;
+    expect(describeOrderActivity(state, current)).toBe("モーター入荷待ち（D10着予定）");
+
+    // D10でモーター入荷、駆動部の仕掛開始 → 「駆動部 仕掛中」が表示される
+    while (state.day <= 10) advanceDay(state);
+    current = state.orders.find((o) => o.orderId === order.orderId)!;
+    expect(describeOrderActivity(state, current)).toBe("駆動部 仕掛中");
+
+    // D20で出荷済 → 「出荷済」
+    while (state.day <= 20) advanceDay(state);
+    current = state.orders.find((o) => o.orderId === order.orderId)!;
+    expect(describeOrderActivity(state, current)).toBe("出荷済");
+  });
+
+  it("取消済の受注は「取消済（D日付）」と表示される", () => {
+    const state = createInitialState();
+    const order = createOrder(state, {
+      customerId: "CUST-A",
+      productItemId: ITEM_IDS.CONVEYOR,
+      quantity: 1,
+      amount: 1_000_000,
+      dueDay: 20,
+    });
+    cancelOrder(state, order.orderId);
+    const current = state.orders.find((o) => o.orderId === order.orderId)!;
+    expect(describeOrderActivity(state, current)).toBe("取消済（D0）");
   });
 });
