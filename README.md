@@ -10,10 +10,22 @@ npm install
 npm run dev
 ```
 
+## テスト
+
+```
+npm test
+```
+
+`docs/design.md` §9-1（クリティカルパス演習）・§9-2（優先順位ルール演習）の日数表を自動テストとして
+再現しており、ドメインロジックの検証に使っている。GitHub ActionsでPR発行時に自動実行される
+（`.github/workflows/test.yml`）。
+
 ## ドキュメント
 
 - **[docs/design.md](./docs/design.md)** — フル仕様書。業務ルール・画面設計・演習シナリオなど、
   この壁打ちで確定した内容すべて
+- **[docs/implementation-plan.md](./docs/implementation-plan.md)** — 実装計画
 - **[CLAUDE.md](./CLAUDE.md)** — Claude Codeでの実装を続ける際の作業指示・現在の実装状況
 
-このプロジェクトはまだ動作確認前です。実装を進める際はCLAUDE.mdの「最初にやるべきこと」から着手してください。
+ドメインロジック（受注〜出荷のシミュレーション）と最小限の動作確認用UIは実装済み。画面の作り込み
+（ガントチャート、マスタ編集画面など）は未着手。詳細はCLAUDE.mdの「次にやるべきこと」を参照。
