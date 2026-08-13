@@ -141,7 +141,7 @@ function computeFlowGeometry(flow: FlowDef): FlowGeometry {
  * 受注〜出荷のプロセス連携図（design.md §2のIPO表に基づく）。
  * BPMN風に、各ドメインを1つのプール（矩形）として表し、ドメイン間の点線＋矢印
  * （BPMNのメッセージフロー相当）でモノ・データの向きを示す。
- * 「本日」＝直前に「次の日へ進む」で処理された日に実際に動いた流れだけをティール色でハイライトする。
+ * 「本日」＝直前に「次の日へ進む」で処理された日に実際に動いた流れだけをアクセント色でハイライトする。
  */
 function ProcessFlowDiagram({ state }: Props) {
   const { lastDay, flowIds } = computeActiveFlows(state);
@@ -154,7 +154,7 @@ function ProcessFlowDiagram({ state }: Props) {
       <h2>受注〜出荷 プロセス連携図</h2>
       <p>
         受注・マスタ・調達・在庫・生産・出荷の各ドメインを1つのプロセスとして表し、ドメイン間を結ぶ点線が
-        「どちらからどちらへモノ・データが流れるか」を表す（矢印の先が受け取る側）。ティール色の実線は、直前に
+        「どちらからどちらへモノ・データが流れるか」を表す（矢印の先が受け取る側）。アクセント色の実線は、直前に
         「次の日へ進む」で実際に動いた流れ。
       </p>
 
@@ -168,10 +168,24 @@ function ProcessFlowDiagram({ state }: Props) {
         >
           <defs>
             <marker id="pf-start-active" markerWidth={10} markerHeight={10} refX={5} refY={5}>
-              <circle cx={5} cy={5} r={3.5} fill="var(--color-surface)" stroke="#0f9b8e" strokeWidth={1.5} />
+              <circle
+                cx={5}
+                cy={5}
+                r={3.5}
+                fill="var(--color-surface)"
+                stroke="var(--color-primary)"
+                strokeWidth={1.5}
+              />
             </marker>
             <marker id="pf-start-idle" markerWidth={10} markerHeight={10} refX={5} refY={5}>
-              <circle cx={5} cy={5} r={3.5} fill="var(--color-surface)" stroke="#9aa0a6" strokeWidth={1.5} />
+              <circle
+                cx={5}
+                cy={5}
+                r={3.5}
+                fill="var(--color-surface)"
+                stroke="var(--color-flow-idle)"
+                strokeWidth={1.5}
+              />
             </marker>
             <marker
               id="pf-end-active"
@@ -181,7 +195,7 @@ function ProcessFlowDiagram({ state }: Props) {
               refY={5}
               orient="auto-start-reverse"
             >
-              <path d="M1,1 L9,5 L1,9" fill="none" stroke="#0f9b8e" strokeWidth={1.6} />
+              <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--color-primary)" strokeWidth={1.6} />
             </marker>
             <marker
               id="pf-end-idle"
@@ -191,13 +205,13 @@ function ProcessFlowDiagram({ state }: Props) {
               refY={5}
               orient="auto-start-reverse"
             >
-              <path d="M1,1 L9,5 L1,9" fill="none" stroke="#9aa0a6" strokeWidth={1.6} />
+              <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--color-flow-idle)" strokeWidth={1.6} />
             </marker>
           </defs>
 
           {geometries.map(({ flow, path, labelX, labelY }) => {
             const active = flowIds.has(flow.id);
-            const stroke = active ? "#0f9b8e" : "#c3c8ce";
+            const stroke = active ? "var(--color-primary)" : "var(--color-flow-idle)";
             return (
               <g key={flow.id}>
                 <path
@@ -223,7 +237,7 @@ function ProcessFlowDiagram({ state }: Props) {
                   y={labelY + 1}
                   fontSize={10.5}
                   textAnchor="middle"
-                  fill={active ? "#0c7f74" : "#6b7280"}
+                  fill={active ? "var(--color-primary-hover)" : "var(--color-text-muted)"}
                   fontWeight={active ? 600 : 400}
                 >
                   {flow.label}
@@ -244,13 +258,20 @@ function ProcessFlowDiagram({ state }: Props) {
                   height={BOX_H}
                   rx={12}
                   fill={active ? "var(--color-primary-soft)" : "var(--color-surface)"}
-                  stroke={active ? "#0f9b8e" : "#c3c8ce"}
+                  stroke={active ? "var(--color-primary)" : "var(--color-flow-idle)"}
                   strokeWidth={active ? 2.4 : 1.5}
                 />
-                <text x={cx} y={cy - 6} textAnchor="middle" fontSize={15} fontWeight={700} fill="#1a1d21">
+                <text
+                  x={cx}
+                  y={cy - 6}
+                  textAnchor="middle"
+                  fontSize={15}
+                  fontWeight={700}
+                  fill="var(--color-text)"
+                >
                   {DOMAIN_LABELS[id]}
                 </text>
-                <text x={cx} y={cy + 14} textAnchor="middle" fontSize={9.5} fill="#6b7280">
+                <text x={cx} y={cy + 14} textAnchor="middle" fontSize={9.5} fill="var(--color-text-muted)">
                   {DOMAIN_HINT[id]}
                 </text>
               </g>
@@ -260,7 +281,7 @@ function ProcessFlowDiagram({ state }: Props) {
       </div>
 
       <p className="process-flow-legend">
-        丸：流れの起点／矢印：流れの終点（受け取る側）／点線＋グレー：現在動きのない流れ／実線＋ティール：本日動いた流れ
+        丸：流れの起点／矢印：流れの終点（受け取る側）／点線＋グレー：現在動きのない流れ／実線＋アクセント色：本日動いた流れ
       </p>
 
       <div className="process-flow-today">
