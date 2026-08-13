@@ -41,6 +41,8 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Remove preview
         uses: rossjrw/pr-preview-action@v1
         with:
