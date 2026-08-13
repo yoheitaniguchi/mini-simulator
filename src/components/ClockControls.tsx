@@ -8,7 +8,7 @@ interface Props {
 
 function ClockControls({ day, dispatch }: Props) {
   return (
-    <section className="panel toolbar">
+    <section className="panel toolbar floating-toolbar">
       <span className="day-badge">Day {day}</span>
       <button className="btn btn-primary" onClick={() => dispatch({ type: "ADVANCE_DAY" })}>
         次の日へ進む
