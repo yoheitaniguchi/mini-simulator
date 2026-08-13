@@ -85,6 +85,16 @@ describe("computeGanttLayout", () => {
     expect(row.dimmed).toBe(true);
   });
 
+  it("受注が1件もない場合は空のrowsを返し、min/maxDayは0〜1の範囲になる（0除算を避ける）", () => {
+    const state = createInitialState();
+
+    const layout = computeGanttLayout(state);
+    expect(layout.rows).toEqual([]);
+    expect(layout.minDay).toBe(0);
+    expect(layout.maxDay).toBe(1);
+    expect(layout.todayDay).toBe(0);
+  });
+
   it("x軸の範囲は全受注の登録日〜納期と今日の範囲に応じて自動的にスケールする", () => {
     const state = createInitialState();
     createOrder(state, {

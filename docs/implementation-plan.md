@@ -131,3 +131,20 @@ Phase 7（画面の作り込み）も完了した。`src/components/` に画面�
   導入は今後の検討課題）
 - ガントチャートのレスポンシブ対応（現状はSVG固定幅）
 - §9の演習を画面でなぞる操作手順のチュートリアル化
+
+## 7. テスト拡充・コード整理（追加セッションで実施）
+
+一通りの画面実装（Phase 7）完了後、テストカバレッジの見直しとコードの整理を行った。
+
+- **テスト追加**：`domain/reducer.ts`（`simulationReducer`）はそれまで直接のテストが無く、
+  `logic.test.ts`・`gantt.test.ts` から `createInitialState()` 経由で間接的に使われるのみだった。
+  `domain/reducer.test.ts` を新設し、全action種別（`ORDER_CREATE`/`ORDER_CANCEL`/`ADVANCE_DAY`/
+  `RESET`/マスタ更新系）が対応する `logic.ts` の関数へ正しく委譲されること、元のstateを書き換えず
+  新しいstateを返すこと、未知のactionはstateをそのまま返すことを検証。加えて `gantt.test.ts` に
+  受注が1件も無い場合（0除算回避）のエッジケースを追加した
+- **不具合修正**：`logic.ts` の `describeOrderActivity()` が、本体（BOMのルート品目）が完成品在庫に
+  計上済みで納期到来のみを待っている状態（§9-1 D16〜D19）で「引当待ち」という誤ったラベルを返して
+  いた（候補ゼロ時の汎用フォールバックにフォールスルーしていたため）。design.mdの表現（「出荷待ち」）
+  に合わせて修正し、`logic.test.ts` にこの状態を検証するアサーションを追加した
+- **コード整理**：`computeRequiredTree`・`attemptAllocate` はモジュール外から参照されていなかったため
+  非exportに変更。`index.css` の未使用セレクタ（`.input-narrow`）を削除した

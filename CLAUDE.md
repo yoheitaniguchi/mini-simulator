@@ -42,7 +42,8 @@ mini-simulator/
     │   ├── gantt.test.ts
     │   ├── processFlow.ts    # プロセス連携図（BPMN風）用の表示データ計算（design.md §2のIPO表が根拠）
     │   ├── processFlow.test.ts
-    │   └── reducer.ts       # useReducer用reducer。1日の処理順序（design.md §8）を実装
+    │   ├── reducer.ts       # useReducer用reducer。1日の処理順序（design.md §8）を実装
+    │   └── reducer.test.ts  # 各actionのlogic.tsへの委譲・不変性（元stateを書き換えない）の検証
     └── components/         # 画面領域ごとのコンポーネント（design.md §13〜§15, §18）
         ├── ClockControls.tsx      # 時計操作（Day表示・次の日へ進む・リセット）
         ├── OrderForm.tsx          # 受注入力フォーム
@@ -70,7 +71,8 @@ npm test          # vitestによる自動テスト実行（§9-1・§9-2の演�
 ## 現在の実装状況
 
 - ✅ ドメインロジック（`domain/logic.ts`, `domain/reducer.ts`）：design.md §4〜§8, §16 に基づき実装済み。
-  §9-1・§9-2の演習シナリオを自動テスト化して検証済み（`domain/logic.test.ts`）
+  §9-1・§9-2の演習シナリオを自動テスト化して検証済み（`domain/logic.test.ts`）。`reducer.ts` 自体
+  （各actionのlogic.tsへの委譲・不変性）も `domain/reducer.test.ts` で検証済み
 - ✅ 初期マスタデータ（`data/masterData.ts`）：design.md §17（小型コンベア装置）
 - ✅ CI：`.github/workflows/test.yml` でPR発行時に `npm run build`（型チェック）と `npm test` を自動実行
 - ✅ 画面：design.md §13（メイン画面）, §14（マスタ画面）, §15（取消確認モーダル）,
@@ -88,8 +90,8 @@ npm test          # vitestによる自動テスト実行（§9-1・§9-2の演�
 design.md §13〜§15, §18 で要求されていた画面の作り込みは一通り完了した。次の候補は以下の通り
 （design.md §10でスコープ外と明記されているものは対象外）。
 
-1. UIの自動テスト（現状はvitestによるドメインロジックのテストのみ。React Testing Library等で
-   コンポーネントの振る舞いをテストする余地がある）
+1. UIの自動テスト（現状はvitestによるドメイン層（`logic.ts`/`gantt.ts`/`processFlow.ts`/`reducer.ts`）
+   のテストのみ。React Testing Library等の導入・コンポーネントの振る舞いテストは未着手）
 2. ガントチャートのアクセシビリティ・レスポンシブ対応の改善（現在はSVG決め打ち幅）
 3. §9の演習を画面でなぞる操作手順を `docs/` にチュートリアルとして整理する（教材としての使いやすさ向上）
 
@@ -108,14 +110,17 @@ design.md §13〜§15, §18 で要求されていた画面の作り込みは一�
   「現在の活動（例：駆動部 仕掛中）」という例のみ示し、複数の下位アセンブリが同時に別々の状態にある場合に
   どれを表示するかは明記していない。本実装では `logic.ts` の `describeOrderActivity()` が、BOMツリー全体を
   走査し「最も入荷・完成が遅い（＝クリティカルパス上で律速している）候補」を1つ選んで表示する方式にした
-  （§9-1のモーターの例のように、律速工程が視覚的にわかることを優先したため）
+  （§9-1のモーターの例のように、律速工程が視覚的にわかることを優先したため）。なお、本体（BOMのルート品目）
+  が既に完成品在庫にあり納期到来のみを待っている状態（§9-1 D16〜D19）は、design.mdの表現通り「出荷待ち」を
+  返すようにしている（以前は候補ゼロの汎用フォールバック「引当待ち」を誤って返していたため修正した）
 
 ## コーディング上の注意
 
 - `domain/logic.ts` の関数群は、呼び出し側（`reducer.ts`）が渡した状態のクローンを直接書き換える設計にしている
   （`reducer.ts` 側で `structuredClone` してから渡している）。この層の外側（UI等）からは純粋関数として扱うこと
-- BOMの階層探索・所要量計算はすべて `logic.ts` 内の再帰関数（`attemptAllocate`, `computeRequiredTree`）に
-  集約している。UI側でBOM階層を独自に辿るロジックを重複させないこと
+- BOMの階層探索・所要量計算はすべて `logic.ts` 内の再帰関数（`attemptAllocate`, `computeRequiredTree`。
+  いずれもモジュール外から使う必要がないため非export）に集約している。UI側でBOM階層を独自に辿る
+  ロジックを重複させないこと
 
 ## ロジック検証ループ（§9-1・§9-2の自動テスト化）
 

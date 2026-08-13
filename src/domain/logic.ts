@@ -71,7 +71,7 @@ function isOrderActive(order: Order): boolean {
  * 指定した受注について、まだ消費されていない（WIP/FGレコードが存在しない）購買品の
  * 必要数量を、BOMを再帰的に辿って集計する（§5の「未充足の全受注の所要数合計」算出に使用）。
  */
-export function computeRequiredTree(
+function computeRequiredTree(
   state: SimulationState,
   order: Order,
   itemId: string,
@@ -136,7 +136,7 @@ function checkAndPlaceProcurement(state: SimulationState, itemId: string, day: n
  * 直下の構成品が購買品なら材料在庫を、内製品ならFGレコードの有無を確認する。
  * 揃っていなければ、購買品側は調達への発注要求を、内製品側はさらに下位への再帰呼び出しを行う。
  */
-export function attemptAllocate(
+function attemptAllocate(
   state: SimulationState,
   order: Order,
   itemId: string,
@@ -403,6 +403,9 @@ function findBottleneck(
 export function describeOrderActivity(state: SimulationState, order: Order): string {
   if (order.status === "出荷済") return "出荷済";
   if (order.status === "取消済") return `取消済（D${order.cancelledDay}）`;
+  // 本体（productItemId）が既に完成品在庫にある＝引当・生産は完了済みで、納期到来を待つのみ
+  // （design.md §9-1 D16「本体の仕掛完成…納期D20にはまだ早いため出荷待ち」の表現に合わせる）
+  if (hasFg(state, order.orderId, order.productItemId)) return "出荷待ち";
 
   const candidates = findBottleneck(state, order, order.productItemId, order.quantity);
   if (candidates.length === 0) {
