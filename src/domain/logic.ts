@@ -67,6 +67,11 @@ function isOrderActive(order: Order): boolean {
   return order.status === "受注済" || order.status === "引当中";
 }
 
+/** まだ出荷（または取消）が完了していない受注が1件でもあるか（自動再生の終了判定に使用） */
+export function hasUnfinishedOrders(state: SimulationState): boolean {
+  return state.orders.some(isOrderActive);
+}
+
 /**
  * 指定した受注について、まだ消費されていない（WIP/FGレコードが存在しない）購買品の
  * 必要数量を、BOMを再帰的に辿って集計する（§5の「未充足の全受注の所要数合計」算出に使用）。
