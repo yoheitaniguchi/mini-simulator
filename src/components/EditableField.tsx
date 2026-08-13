@@ -29,7 +29,7 @@ export function EditableNumberField({ value, min = 1, onCommit }: NumberFieldPro
           setDraft(String(value));
         }
       }}
-      style={{ width: 64 }}
+      className="editable-number"
     />
   );
 }

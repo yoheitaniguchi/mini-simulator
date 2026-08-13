@@ -13,12 +13,12 @@ function EventLogPanel({ state }: Props) {
   const entries = state.eventLog.slice().reverse();
 
   return (
-    <section>
+    <section className="panel">
       <h2>本日の出来事ログ</h2>
       {entries.length === 0 ? (
-        <p>まだ何も起きていません。「次の日へ進む」を押してください。</p>
+        <p className="empty-state">まだ何も起きていません。「次の日へ進む」を押してください。</p>
       ) : (
-        <ul style={{ maxHeight: 240, overflowY: "auto", paddingLeft: 20 }}>
+        <ul className="event-log">
           {entries.map((entry, i) => (
             <li key={i}>
               D{entry.day}: {entry.message}
