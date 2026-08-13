@@ -27,10 +27,10 @@ function OrderForm({ state, dispatch }: Props) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
+    <section className="panel">
       <h2>受注入力</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-        <label style={{ display: "flex", flexDirection: "column" }}>
+      <form onSubmit={handleSubmit} className="form-grid">
+        <label className="field">
           得意先
           <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
             {state.customers.map((c) => (
@@ -40,11 +40,11 @@ function OrderForm({ state, dispatch }: Props) {
             ))}
           </select>
         </label>
-        <label style={{ display: "flex", flexDirection: "column" }}>
+        <label className="field">
           製品
-          <span>{topLevelItem?.name}</span>
+          <span className="field-static">{topLevelItem?.name}</span>
         </label>
-        <label style={{ display: "flex", flexDirection: "column" }}>
+        <label className="field">
           数量
           <input
             type="number"
@@ -53,7 +53,7 @@ function OrderForm({ state, dispatch }: Props) {
             onChange={(e) => setQuantity(Number(e.target.value))}
           />
         </label>
-        <label style={{ display: "flex", flexDirection: "column" }}>
+        <label className="field">
           金額
           <input
             type="number"
@@ -62,7 +62,7 @@ function OrderForm({ state, dispatch }: Props) {
             onChange={(e) => setAmount(Number(e.target.value))}
           />
         </label>
-        <label style={{ display: "flex", flexDirection: "column" }}>
+        <label className="field">
           納期（D+）
           <input
             type="number"
@@ -71,7 +71,9 @@ function OrderForm({ state, dispatch }: Props) {
             onChange={(e) => setDueDay(Number(e.target.value))}
           />
         </label>
-        <button type="submit">受注登録</button>
+        <button type="submit" className="btn btn-primary">
+          受注登録
+        </button>
       </form>
     </section>
   );

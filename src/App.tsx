@@ -17,23 +17,19 @@ function App() {
   const [cancelTargetOrderId, setCancelTargetOrderId] = useState<string | null>(null);
 
   return (
-    <div style={{ fontFamily: "sans-serif", maxWidth: 1024, margin: "0 auto", padding: 16 }}>
-      <h1>生産管理ミニマムシミュレーター</h1>
+    <div className="page">
+      <header className="app-header">
+        <h1>生産管理ミニマムシミュレーター</h1>
 
-      <nav style={{ display: "flex", gap: 8, marginBottom: 16, borderBottom: "1px solid #ddd" }}>
-        <button
-          onClick={() => setTab("main")}
-          style={{ fontWeight: tab === "main" ? "bold" : "normal" }}
-        >
-          メイン画面
-        </button>
-        <button
-          onClick={() => setTab("master")}
-          style={{ fontWeight: tab === "master" ? "bold" : "normal" }}
-        >
-          マスタ
-        </button>
-      </nav>
+        <nav className="tabs">
+          <button aria-selected={tab === "main"} onClick={() => setTab("main")}>
+            メイン画面
+          </button>
+          <button aria-selected={tab === "master"} onClick={() => setTab("master")}>
+            マスタ
+          </button>
+        </nav>
+      </header>
 
       {tab === "main" ? (
         <>

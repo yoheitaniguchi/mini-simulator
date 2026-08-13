@@ -46,9 +46,9 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
 
   if (layout.rows.length === 0) {
     return (
-      <section style={{ marginBottom: 24 }}>
+      <section className="panel">
         <h2>受注一覧</h2>
-        <p>受注はまだ登録されていません。</p>
+        <p className="empty-state">受注はまだ登録されていません。</p>
       </section>
     );
   }
@@ -59,41 +59,34 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
   const ticks = buildTicks(layout.minDay, layout.maxDay);
 
   return (
-    <section style={{ marginBottom: 24 }}>
+    <section className="panel">
       <h2>受注一覧</h2>
-      <div style={{ display: "flex", gap: 12 }}>
-        <div style={{ flexShrink: 0, width: 260 }}>
-          {layout.rows.map((row, i) => {
-            const order = state.orders.find((o) => o.orderId === row.orderId)!;
-            return (
-              <div
-                key={row.orderId}
-                style={{
-                  height: ROW_HEIGHT,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  opacity: row.dimmed ? 0.5 : 1,
-                  fontSize: 13,
-                  borderTop: i === 0 ? "1px solid #ddd" : undefined,
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                <span style={{ flexGrow: 1, textDecoration: row.dimmed ? "line-through" : "none" }}>
-                  {row.label} [{orderStatusLabel[order.status]}]
-                </span>
-                {order.status === "受注済" && (
-                  <button onClick={() => onRequestCancel(order.orderId)}>取消</button>
-                )}
-                {order.status === "引当中" && (
-                  <span style={{ color: "#888", fontSize: 11 }}>取消不可</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <div className="gantt-scroll">
+        <div className="gantt-wrap">
+          <div className="gantt-labels" style={{ height: chartHeight }}>
+            {layout.rows.map((row) => {
+              const order = state.orders.find((o) => o.orderId === row.orderId)!;
+              return (
+                <div
+                  key={row.orderId}
+                  className={`gantt-row-label${row.dimmed ? " dimmed" : ""}`}
+                  style={{ height: ROW_HEIGHT }}
+                >
+                  <span className="label-text">
+                    {row.label} [{orderStatusLabel[order.status]}]
+                  </span>
+                  {order.status === "受注済" && (
+                    <button className="btn btn-sm" onClick={() => onRequestCancel(order.orderId)}>
+                      取消
+                    </button>
+                  )}
+                  {order.status === "引当中" && <span className="status-muted">取消不可</span>}
+                </div>
+              );
+            })}
+          </div>
 
-        <svg width={SVG_WIDTH} height={chartHeight + 20} role="img" aria-label="受注一覧ガントチャート">
+          <svg width={SVG_WIDTH} height={chartHeight + 20} role="img" aria-label="受注一覧ガントチャート">
           {layout.rows.map((row, i) => {
             const y = i * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2;
             const opacity = row.dimmed ? 0.4 : 1;
@@ -158,9 +151,10 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
               D{day}
             </text>
           ))}
-        </svg>
+          </svg>
+        </div>
       </div>
-      <p style={{ fontSize: 12, color: "#666" }}>
+      <p className="gantt-legend">
         グレー：待機中／ティール：仕掛中／◆：納期／✓：出荷済／✕：取消済
       </p>
     </section>
