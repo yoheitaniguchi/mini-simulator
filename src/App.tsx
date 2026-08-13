@@ -8,19 +8,18 @@ import OrderForm from "./components/OrderForm";
 import OrderGanttChart from "./components/OrderGanttChart";
 import ProcessFlowDiagram from "./components/ProcessFlowDiagram";
 import ShipmentPanel from "./components/ShipmentPanel";
+import ThemeSelectModal from "./components/ThemeSelectModal";
 import { createInitialState, simulationReducer } from "./domain/reducer";
-import { applyThemeToDocument, loadStoredTheme, storeTheme, THEME_OPTIONS, type ThemeId } from "./theme";
+import { applyThemeToDocument, loadStoredTheme, storeTheme, type ThemeId } from "./theme";
 
 type Tab = "main" | "process" | "master";
-
-const LIGHT_THEMES = THEME_OPTIONS.filter((option) => option.group === "light");
-const DARK_THEMES = THEME_OPTIONS.filter((option) => option.group === "dark");
 
 function App() {
   const [state, dispatch] = useReducer(simulationReducer, undefined, createInitialState);
   const [tab, setTab] = useState<Tab>("main");
   const [cancelTargetOrderId, setCancelTargetOrderId] = useState<string | null>(null);
   const [theme, setTheme] = useState<ThemeId>(loadStoredTheme);
+  const [themeModalOpen, setThemeModalOpen] = useState(false);
 
   useEffect(() => {
     applyThemeToDocument(theme);
@@ -45,30 +44,9 @@ function App() {
             </button>
           </nav>
 
-          <label className="field theme-select-field">
-            <span className="sr-only">画面テーマ</span>
-            <select
-              className="theme-select"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as ThemeId)}
-              aria-label="画面テーマ"
-            >
-              <optgroup label="ライト">
-                {LIGHT_THEMES.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="ダーク">
-                {DARK_THEMES.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </label>
+          <button type="button" className="btn btn-sm" onClick={() => setThemeModalOpen(true)}>
+            スタイル
+          </button>
         </div>
       </header>
 
@@ -100,6 +78,14 @@ function App() {
             dispatch({ type: "ORDER_CANCEL", payload: { orderId: cancelTargetOrderId } });
             setCancelTargetOrderId(null);
           }}
+        />
+      )}
+
+      {themeModalOpen && (
+        <ThemeSelectModal
+          currentTheme={theme}
+          onSelect={setTheme}
+          onDismiss={() => setThemeModalOpen(false)}
         />
       )}
     </div>
