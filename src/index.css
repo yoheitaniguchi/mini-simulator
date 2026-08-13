@@ -138,6 +138,13 @@ p {
   gap: var(--space-3);
 }
 
+.floating-toolbar {
+  position: sticky;
+  top: var(--space-3);
+  z-index: 40;
+  box-shadow: var(--shadow-md);
+}
+
 .day-badge {
   display: inline-flex;
   align-items: center;
