@@ -43,9 +43,10 @@ mini-simulator/
     │   ├── processFlow.ts    # プロセス連携図（BPMN風）用の表示データ計算（design.md §2のIPO表が根拠）
     │   ├── processFlow.test.ts
     │   ├── reducer.ts       # useReducer用reducer。1日の処理順序（design.md §8）を実装
-    │   └── reducer.test.ts  # 各actionのlogic.tsへの委譲・不変性（元stateを書き換えない）の検証
+    │   ├── reducer.test.ts  # 各actionのlogic.tsへの委譲・不変性（元stateを書き換えない）の検証
+    │   └── autoPlay.ts      # 自動再生の速度段階（手動/0.3〜1.2秒）の定数定義
     └── components/         # 画面領域ごとのコンポーネント（design.md §13〜§15, §18）
-        ├── ClockControls.tsx      # 時計操作（Day表示・次の日へ進む・リセット）
+        ├── ClockControls.tsx      # 時計操作（Day表示・次の日へ進む・リセット・自動再生）
         ├── OrderForm.tsx          # 受注入力フォーム
         ├── OrderGanttChart.tsx    # 受注一覧パネル（§18のガントチャート表現。取消ボタンもここ）
         ├── CancelConfirmModal.tsx # §15 取消確認モーダル
