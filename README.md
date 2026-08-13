@@ -23,16 +23,27 @@ npm test
 ## GitHub Pagesへの公開
 
 バックエンドを持たない静的SPAなので、そのままGitHub Pagesで公開できる。
-リポジトリの Settings → Pages → Source は **GitHub Actions** に設定済み。
+リポジトリの Settings → Pages → Source は **Deploy from a branch**（ブランチ: `gh-pages` / フォルダ: `/(root)`）
+に設定すること（PRプレビューを`gh-pages`ブランチのサブフォルダに配信するため、GitHub Actions方式は使わない）。
 
 `master` ブランチにpushすると `.github/workflows/deploy.yml` が `npm run build` の成果物（`dist/`）を
-自動でPagesにデプロイする（`workflow_dispatch` で手動実行も可能）。公開URLは
+`gh-pages` ブランチのルートに自動デプロイする（`workflow_dispatch` で手動実行も可能）。公開URLは
 `https://<ユーザー名またはOrg名>.github.io/mini-simulator/`
 （プロジェクトサイトなのでリポジトリ名がパスに入る）。
 
-`vite.config.ts` の `base: "/mini-simulator/"` はこの公開パスに合わせて設定してある。
+`vite.config.ts` の `base` はこの公開パスに合わせて `"/mini-simulator/"` をデフォルトにしている。
 リポジトリ名を変更した場合はここも合わせて変更すること。ルーティングライブラリは使っておらず
 （タブ切り替えはコンポーネントstateのみ）、SPA用の404リダイレクト対策は不要。
+
+### PRプレビュー
+
+PRを作成・更新すると `.github/workflows/pr-preview.yml` が
+`https://<ユーザー名またはOrg名>.github.io/mini-simulator/pr-preview/pr-<PR番号>/`
+にビルド成果物をデプロイし、PRにプレビューURLをコメントする（`vite.config.ts` の `base` はビルド時に
+`BASE_PATH` 環境変数でこのパスに差し替えている）。PRをクローズ・マージすると自動で削除される。
+
+本番デプロイ（`deploy.yml`）は `keep_files: true` で `gh-pages` ブランチの既存ファイルを残したまま
+デプロイするため、進行中のPRプレビューが本番デプロイのたびに消えることはない。
 
 ## ドキュメント
 
