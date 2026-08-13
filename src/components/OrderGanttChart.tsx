@@ -99,7 +99,7 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
                     y={y}
                     width={Math.max(x(seg.to) - x(seg.from), 1)}
                     height={BAR_HEIGHT}
-                    fill={seg.kind === "in-progress" ? "#0f9b8e" : "#b0b0b0"}
+                    fill={seg.kind === "in-progress" ? "var(--color-primary)" : "var(--color-gantt-waiting)"}
                     opacity={opacity}
                   />
                 ))}
@@ -107,7 +107,7 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
                 {row.dueDay !== undefined && (
                   <polygon
                     points={diamondPoints(x(row.dueDay), y + BAR_HEIGHT / 2, 6)}
-                    fill="#f5a623"
+                    fill="var(--color-warning)"
                     opacity={opacity}
                   >
                     <title>納期 D{row.dueDay}</title>
@@ -120,13 +120,13 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
                     y={y + BAR_HEIGHT}
                     fontSize={14}
                     opacity={opacity}
-                    fill={row.endMarker.kind === "shipped" ? "#1a9850" : "#888"}
+                    fill={row.endMarker.kind === "shipped" ? "var(--color-success)" : "var(--color-text-muted)"}
                   >
                     {row.endMarker.kind === "shipped" ? "✓" : "✕"}
                   </text>
                 )}
 
-                <text x={CHART_WIDTH + 8} y={y + BAR_HEIGHT} fontSize={11} fill="#333">
+                <text x={CHART_WIDTH + 8} y={y + BAR_HEIGHT} fontSize={11} fill="var(--color-axis)">
                   {row.statusLabel}
                 </text>
               </g>
@@ -139,15 +139,22 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
             x2={x(layout.todayDay)}
             y1={0}
             y2={chartHeight}
-            stroke="#333"
+            stroke="var(--color-axis)"
             strokeDasharray="4 3"
           />
-          <text x={x(layout.todayDay) + 3} y={chartHeight + 14} fontSize={11} fill="#333">
+          <text x={x(layout.todayDay) + 3} y={chartHeight + 14} fontSize={11} fill="var(--color-axis)">
             今日(D{layout.todayDay})
           </text>
 
           {ticks.map((day) => (
-            <text key={day} x={x(day)} y={chartHeight + 14} fontSize={10} fill="#999" textAnchor="middle">
+            <text
+              key={day}
+              x={x(day)}
+              y={chartHeight + 14}
+              fontSize={10}
+              fill="var(--color-axis-muted)"
+              textAnchor="middle"
+            >
               D{day}
             </text>
           ))}
@@ -155,7 +162,7 @@ function OrderGanttChart({ state, onRequestCancel }: Props) {
         </div>
       </div>
       <p className="gantt-legend">
-        グレー：待機中／ティール：仕掛中／◆：納期／✓：出荷済／✕：取消済
+        グレー：待機中／アクセント色：仕掛中／◆：納期／✓：出荷済／✕：取消済
       </p>
     </section>
   );
