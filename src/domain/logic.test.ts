@@ -161,7 +161,6 @@ describe("§9-2 通し演習：優先順位ルール（複数受注の競合）"
     advanceUntil(state, 18);
     expect(fg(state, orderY.orderId, ITEM_IDS.CONVEYOR)?.completedDay).toBe(18);
 
-    advanceUntil(state, 18);
     const shippedZ = state.orders.find((o) => o.orderId === orderZ.orderId)!;
     expect(shippedZ.status).toBe("出荷済");
     expect(shippedZ.shippedDay).toBe(18);
@@ -230,8 +229,9 @@ describe("§5 二重発注防止", () => {
       quantity: 1,
       amount: 1_000_000,
       dueDay: 18,
-    });
-    advanceDay(state); // D1処理：まだ新規受注の引当試行は行われるが、Zの受注はD2に登録されるのでここでは影響なし
+    }); // Z登録（この時点でstate.day=1）
+    // D1処理：Yの未充足分(2)+Zの必要分(1)=3に対し、有効在庫0+発注残2では不足→1個追加発注される
+    advanceDay(state);
 
     const motorPos = state.purchaseOrders.filter((po) => po.itemId === ITEM_IDS.MOTOR);
     const totalOrdered = motorPos.reduce((sum, po) => sum + po.quantity, 0);
