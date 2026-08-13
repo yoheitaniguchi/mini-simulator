@@ -311,6 +311,11 @@ describe("§18 ガントチャート用ステータスラベル（describeOrderA
     current = state.orders.find((o) => o.orderId === order.orderId)!;
     expect(describeOrderActivity(state, current)).toBe("駆動部 仕掛中");
 
+    // D16で本体の仕掛完成。納期D20にはまだ早いため「出荷待ち」（design.md §9-1の表現通り）
+    while (state.day <= 16) advanceDay(state);
+    current = state.orders.find((o) => o.orderId === order.orderId)!;
+    expect(describeOrderActivity(state, current)).toBe("出荷待ち");
+
     // D20で出荷済 → 「出荷済」
     while (state.day <= 20) advanceDay(state);
     current = state.orders.find((o) => o.orderId === order.orderId)!;
