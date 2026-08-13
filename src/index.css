@@ -401,6 +401,29 @@ td.center {
   margin-bottom: 0;
 }
 
+/* ---------- プロセス連携図 ---------- */
+
+.process-flow-scroll {
+  overflow-x: auto;
+}
+
+.process-flow-legend {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+}
+
+.process-flow-today {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.process-flow-today h3 {
+  margin-bottom: var(--space-2);
+}
+
 /* ---------- モーダル ---------- */
 
 .modal-overlay {
