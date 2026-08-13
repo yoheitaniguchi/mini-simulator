@@ -140,7 +140,7 @@ p {
 
 .floating-toolbar {
   position: sticky;
-  top: var(--space-3);
+  bottom: var(--space-3);
   z-index: 40;
   box-shadow: var(--shadow-md);
 }
