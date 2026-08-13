@@ -33,12 +33,12 @@ function App() {
 
       {tab === "main" ? (
         <>
-          <ClockControls day={state.day} dispatch={dispatch} />
           <OrderForm state={state} dispatch={dispatch} />
           <OrderGanttChart state={state} onRequestCancel={setCancelTargetOrderId} />
           <InventoryPanel state={state} />
           <ShipmentPanel state={state} />
           <EventLogPanel state={state} />
+          <ClockControls day={state.day} dispatch={dispatch} />
         </>
       ) : (
         <MasterDataPage state={state} dispatch={dispatch} />
