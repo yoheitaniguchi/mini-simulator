@@ -6,10 +6,11 @@ import InventoryPanel from "./components/InventoryPanel";
 import MasterDataPage from "./components/MasterDataPage";
 import OrderForm from "./components/OrderForm";
 import OrderGanttChart from "./components/OrderGanttChart";
+import ProcessFlowDiagram from "./components/ProcessFlowDiagram";
 import ShipmentPanel from "./components/ShipmentPanel";
 import { createInitialState, simulationReducer } from "./domain/reducer";
 
-type Tab = "main" | "master";
+type Tab = "main" | "process" | "master";
 
 function App() {
   const [state, dispatch] = useReducer(simulationReducer, undefined, createInitialState);
@@ -25,13 +26,16 @@ function App() {
           <button aria-selected={tab === "main"} onClick={() => setTab("main")}>
             メイン画面
           </button>
+          <button aria-selected={tab === "process"} onClick={() => setTab("process")}>
+            プロセス図
+          </button>
           <button aria-selected={tab === "master"} onClick={() => setTab("master")}>
             マスタ
           </button>
         </nav>
       </header>
 
-      {tab === "main" ? (
+      {tab === "main" && (
         <>
           <OrderForm state={state} dispatch={dispatch} />
           <OrderGanttChart state={state} onRequestCancel={setCancelTargetOrderId} />
@@ -40,9 +44,16 @@ function App() {
           <EventLogPanel state={state} />
           <ClockControls day={state.day} dispatch={dispatch} />
         </>
-      ) : (
-        <MasterDataPage state={state} dispatch={dispatch} />
       )}
+
+      {tab === "process" && (
+        <>
+          <ProcessFlowDiagram state={state} />
+          <ClockControls day={state.day} dispatch={dispatch} />
+        </>
+      )}
+
+      {tab === "master" && <MasterDataPage state={state} dispatch={dispatch} />}
 
       {cancelTargetOrderId && (
         <CancelConfirmModal

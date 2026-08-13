@@ -31,7 +31,7 @@ mini-simulator/
 ├── index.html
 └── src/
     ├── main.tsx            # エントリポイント
-    ├── App.tsx             # 画面本体。タブ切り替え（メイン画面／マスタ）とreducerの保持のみを行う
+    ├── App.tsx             # 画面本体。タブ切り替え（メイン画面／プロセス図／マスタ）とreducerの保持のみを行う
     ├── types.ts            # ドメインの型定義（design.md §2, §4, §16）
     ├── data/
     │   └── masterData.ts   # 初期マスタデータ（design.md §17：小型コンベア装置）
@@ -40,6 +40,8 @@ mini-simulator/
     │   ├── logic.test.ts    # §9-1・§9-2の演習シナリオ、§5・§7・§14の単体テスト
     │   ├── gantt.ts          # §18ガントチャート用の表示データ計算（純粋関数、UIから分離）
     │   ├── gantt.test.ts
+    │   ├── processFlow.ts    # プロセス連携図（BPMN風）用の表示データ計算（design.md §2のIPO表が根拠）
+    │   ├── processFlow.test.ts
     │   └── reducer.ts       # useReducer用reducer。1日の処理順序（design.md §8）を実装
     └── components/         # 画面領域ごとのコンポーネント（design.md §13〜§15, §18）
         ├── ClockControls.tsx      # 時計操作（Day表示・次の日へ進む・リセット）
@@ -49,6 +51,7 @@ mini-simulator/
         ├── InventoryPanel.tsx     # 材料在庫＋仕掛品/完成品（受注ごとの二値）パネル
         ├── ShipmentPanel.tsx      # 出荷実績パネル
         ├── EventLogPanel.tsx      # 本日の出来事ログ
+        ├── ProcessFlowDiagram.tsx # 受注〜出荷プロセス連携図（BPMN風。プロセス図タブ）
         ├── MasterDataPage.tsx     # §14 マスタ画面
         └── EditableField.tsx      # マスタ画面用の編集可能フィールド（数値/テキスト共通部品）
 ```
@@ -75,6 +78,10 @@ npm test          # vitestによる自動テスト実行（§9-1・§9-2の演�
   ブラウザ操作で通しても設計書通りに動作することを確認済み（ガントチャートの表示・マスタ編集の反映も含む）
 - ✅ マスタ画面の編集可否の線引き（§14）：品目の標準リードタイム・BOMの員数・得意先/仕入先名称のみ編集可能、
   区分・BOM構造・新規追加はUI上そもそも編集不可（`MasterDataPage.tsx`）
+- ✅ プロセス連携図（新規タブ「プロセス図」）：design.md §2のIPO表に基づき、受注・マスタ・調達・在庫・生産・出荷の
+  6ドメインをBPMN風のプール（矩形）として表し、ドメイン間をメッセージフロー（点線＋矢印）で結んでモノ・データの
+  向きを示す画面。直前の「次の日へ進む」で実際に動いた流れをティール色でハイライトする動的な図（`domain/processFlow.ts`,
+  `components/ProcessFlowDiagram.tsx`）。design.md本体には未記載の追加画面のため、直接design.mdは更新していない
 
 ## 次にやるべきこと（優先順）
 
