@@ -116,3 +116,14 @@ design.md §13〜§15, §18 で要求されていた画面の作り込みは一�
   （`reducer.ts` 側で `structuredClone` してから渡している）。この層の外側（UI等）からは純粋関数として扱うこと
 - BOMの階層探索・所要量計算はすべて `logic.ts` 内の再帰関数（`attemptAllocate`, `computeRequiredTree`）に
   集約している。UI側でBOM階層を独自に辿るロジックを重複させないこと
+
+## ロジック検証ループ（§9-1・§9-2の自動テスト化）
+
+- `docs/design.md` §9-1（クリティカルパス演習）・§9-2（優先順位ルール演習）の日数表・期待される状態遷移を、
+  `src/domain/logic.test.ts` にそのままテストケースとして書き起こし、`npm test`（vitest）で自動検証している
+  （受注登録は「次の日へ進む」まで処理されないというCLAUDE.md記載のルールに沿って手順を組み立てている）
+- このテストを軸に、「テストが落ちたら `logic.ts` の不具合かテストの記述誤りかを design.md の仕様と照らして判断し、
+  `logic.ts` 側の不具合なら修正して再度 `npm test` を回す」というサイクルを、全件passするまで繰り返す運用を想定している
+- レビュー専用のサブエージェント `logic-reviewer`（`.claude/agents/logic-reviewer.md`）を用意した。
+  `logic.ts` と `logic.test.ts` が design.md §9-1・§9-2の仕様と矛盾していないかを確認する目的専用で、
+  コードは書き換えず指摘のみを行う（読み取り専用ツールのみ許可）
